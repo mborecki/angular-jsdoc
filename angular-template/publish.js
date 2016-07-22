@@ -208,6 +208,10 @@ exports.publish = function(data, opts, tutorials) {
   var classes  = helper.find(data, {kind: 'class'});
   var sourceCodes = {}, templateCodes = {};
 
+  classes = classes.filter(function(doclet){
+    return !doclet.ignore
+  });
+
   classes.forEach(function(doclet) {
 
     if (doclet.meta && doclet.kind == 'class') {
@@ -245,7 +249,7 @@ exports.publish = function(data, opts, tutorials) {
     if(!doclet.memberof){
       return;
     }
-    
+
     var cache = memberCache[doclet.memberof];
     if(!cache){
         memberCache[doclet.memberof] = [doclet];
