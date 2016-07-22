@@ -267,6 +267,7 @@ exports.publish = function(data, opts, tutorials) {
         { tag: 'em', classname: 'disabled', prefix: 'Tutorial: ' });
     };
 
+
     if (doclet.meta) {
       if (doclet.kind == 'class') {
         doclet.sourceUrl = 'source/'+
@@ -285,6 +286,42 @@ exports.publish = function(data, opts, tutorials) {
         doclet.see[i] = hashToLink(doclet, seeItem);
       });
     }
+  });
+
+  var defaultTypes = ['boolean', 'string', 'expression', '*', 'mixed', 'number', 'null', 'undefined', 'function', 'object', 'array', 'void'];
+  var arrayRegExp = new RegExp(/Array\.(?:<|\&lt)(.+)>$/)
+  classes.forEach(function(doclet) {
+
+    if (doclet.children && doclet.children.member) {
+
+      doclet.children.member.forEach(function(m){
+
+        if (m.type) {
+
+          m.type.names = m.type.names.map(function(t) {
+            if (t.indexOf('<a href') !== -1) {
+              return t;
+            }
+            var r = '';
+            var array = arrayRegExp.exec(t);
+
+            var typeName = array ? array[1] : t;
+
+            if (defaultTypes.indexOf(typeName) !== -1) {
+              return t;
+            }
+
+            r = '<a href="' + typeName + '.html">' + typeName + (array ? '[]' : '') + '</a>';
+
+            return r;
+          });
+
+        }
+
+      });
+
+    }
+
   });
 
   // build navigation
