@@ -159,6 +159,7 @@
     <dt>
       <a href="{{ func.sourceUrl }}" class="name-link" id="{{ func.name }}">
         <h4 class="name">
+          <strong class="scope" ht-if="func.scope && func.scope !== 'instance'">{{ func.scope }}: </strong>
           {{ func.name }}
           <span ht-if="func.params" class="signature">({{ func.params.map(function(param){return param.name;}).join(", ") }})</span>
           <span ht-if="func.returns && func.returns[0].typeDefinition" class="type-signature">
