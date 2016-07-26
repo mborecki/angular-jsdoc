@@ -289,7 +289,8 @@ exports.publish = function(data, opts, tutorials) {
   });
 
   var defaultTypes = ['boolean', 'string', 'expression', '*', 'mixed', 'number', 'null', 'undefined', 'function', 'object', 'array', 'void'];
-  var arrayRegExp = new RegExp(/Array\.(?:<|\&lt)(.+)>$/)
+  var arrayRegExp = new RegExp(/Array\.(?:<|\&lt;?)(.+)>$/)
+  var qRegex = new RegExp(/\$q\.?(?:<|\&lt;?)(.+)>/);
   classes.forEach(function(doclet) {
 
     if (doclet.children && doclet.children.member) {
@@ -302,16 +303,27 @@ exports.publish = function(data, opts, tutorials) {
             if (t.indexOf('<a href') !== -1) {
               return t;
             }
+            var q = qRegex.exec(t);
+            if (q) {
+              t = q[1];
+            }
+
             var r = '';
             var array = arrayRegExp.exec(t);
 
             var typeName = array ? array[1] : t;
 
+
             if (defaultTypes.indexOf(typeName) !== -1) {
-              return t;
+              r = typeName;
+            } else {
+              r = '<a href="' + typeName + '.html">' + typeName + (array ? '[]' : '') + '</a>';
             }
 
-            r = '<a href="' + typeName + '.html">' + typeName + (array ? '[]' : '') + '</a>';
+
+            if (q) {
+              r = '$q&lt;' + r + '>';
+            }
 
             return r;
           });

@@ -120,7 +120,7 @@ function parseParamTypes(docletParams, tag) {
   };
 
   var defaultTypes = ['boolean', 'string', 'expression', '*', 'mixed', 'number', 'null', 'undefined', 'function',
-    'object', 'array', 'void'];
+    'object', 'array', 'void', '$q'];
   var defaultTypeStarts = ['\'', '"', '[', '{'];
 
   var typeDoc = new RegExp(/\{(.*?)\}/).exec(tag.text);
@@ -133,25 +133,38 @@ function parseParamTypes(docletParams, tag) {
 
   var types = typeDoc[1].split('|');
   var typeRegex = new RegExp(/(.*?)(\[\])?$/);
+  var qRegex = new RegExp(/\$q\.?(?:<|\&lt;?)(.+)>/);
 
   var parseTypeDefinitionUrl = '';
   var parseTypeDefinition = '';
   var i = 0;
   for (; i < types.length; i++) {
-    var type = typeRegex.exec(types[i]);
+
+    var q = qRegex.exec(types[i]);
+
+    var type = typeRegex.exec(q ? q[1] : types[i]);
 
     if (i > 0) {
-      parseTypeDefinitionUrl += '|';
-      parseTypeDefinition += '|';
+      parseTypeDefinitionUrl += ' | ';
+      parseTypeDefinition += ' | ';
     }
+
+    var url;
+    var name = type[1] + (type[2] || '');
 
     if (defaultTypes.indexOf(type[1].toLowerCase()) !== -1 || defaultTypeStarts.indexOf(type[1][0]) !== -1) {
-      parseTypeDefinitionUrl += type[1] + (type[2] || '');
+      url = name;
     } else {
-      parseTypeDefinitionUrl += '<a href="' + type[1] + '.html">' + type[1] + (type[2] || '') + '</a>';
+      url = '<a href="' + type[1] + '.html">' + name + '</a>';
     }
 
-    parseTypeDefinition += type[1] + (type[2] || '');
+    if (q) {
+      url = '$q&lt;' + url + '>';
+    }
+
+    parseTypeDefinitionUrl += url;
+
+    parseTypeDefinition += name;
   }
 
   result.typeDefinitionUrl = parseTypeDefinitionUrl;
