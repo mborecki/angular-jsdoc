@@ -205,6 +205,14 @@ exports.publish = function(data, opts, tutorials) {
 
   templatePath = opts.template;
 
+  // Delete undocumented doclets if documented vertions exists.
+  data().filter(function() {
+      if (this.undocumented && helper.find(data, {longname: this.longname}).length) {
+        return true;
+      }
+    return false;
+  }).remove();
+
   var classes  = helper.find(data, {kind: 'class'});
   var sourceCodes = {}, templateCodes = {};
 
