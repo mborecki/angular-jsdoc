@@ -131,44 +131,102 @@ function parseParamTypes(docletParams, tag) {
     return;
   }
 
+
+
   var types = typeDoc[1].split('|');
   var typeRegex = new RegExp(/(.*?)(\[\])?$/);
-  var qRegex = new RegExp(/\$q\.?(?:<|\&lt;?)(.+)>/);
+  var qRegex = new RegExp(/^\$q\.?(?:<|\&lt;?)(.+)>$/);
+  var hashRegex = new RegExp(/^Object\.?(?:<|\&lt;?)(.+)(?:\s*)\,(?:\s*)(.+)>$/);
 
   var parseTypeDefinitionUrl = '';
   var parseTypeDefinition = '';
   var i = 0;
-  for (; i < types.length; i++) {
 
-    var q = qRegex.exec(types[i]);
 
-    var type = typeRegex.exec(q ? q[1] : types[i]);
+  function parseType(type) {
+    var q = qRegex.exec(type);
 
-    if (i > 0) {
-      parseTypeDefinitionUrl += ' | ';
-      parseTypeDefinition += ' | ';
-    }
-
-    var url;
-    var name = type[1] + (type[2] || '');
-
-    if (defaultTypes.indexOf(type[1].toLowerCase()) !== -1 || defaultTypeStarts.indexOf(type[1][0]) !== -1) {
-      url = name;
-    } else {
-      url = '<a href="' + type[1] + '.html">' + name + '</a>';
-    }
 
     if (q) {
-      url = '$q&lt;' + url + '>';
+      return parseQ(q)
     }
 
-    parseTypeDefinitionUrl += url;
+    var hash = hashRegex.exec(type);
 
-    parseTypeDefinition += name;
+
+    if (hash) {
+      return parseHash(hash)
+    }
+
+    var t = typeRegex.exec(type)
+
+    if (t) {
+      return parseNormalType(t)
+    }
+
+    return {
+      name: '',
+      url: ''
+    }
   }
 
-  result.typeDefinitionUrl = parseTypeDefinitionUrl;
-  result.typeDefinition = parseTypeDefinition;
+
+  function parseNormalType(t) {
+
+    var array = !!t[2];
+
+    var name = t[1] + (array ? '[]' : '');
+    var url = '<a href="' + t[1] + '.html">' + name + '</a>';
+
+    if (defaultTypes.indexOf(t[1].toLowerCase()) !== -1) {
+      url = name;
+    }
+
+    return {
+      name: name,
+      url: url
+    }
+  }
+
+  function parseQ(q) {
+    var type = parseType(q[1]);
+
+    return {
+      name: q[0],
+      url: '$q&lt;' + type.url + '>'
+    }
+  }
+
+  function parseHash(hash) {
+    var key = parseType(hash[1]);
+    var type = parseType(hash[2]);
+
+    return {
+      name: hash[0],
+      url: 'Object&lt;' + key.url + ', ' + type.url + '>'
+    }
+  }
+
+
+  var parsedTypes = types.map(function(type) {
+
+    var parsed = parseType(type);
+
+    return {
+      name: parsed.name,
+      url: parsed.url
+    }
+  });
+
+  result.typeDefinitionUrl = parsedTypes.map(function(type) {
+    return type.url;
+  }).join(' | ');
+
+  result.typeDefinition = parsedTypes.map(function(type) {
+    return type.name;
+  }).join(' | ');
+
+
   docletParams.push(result);
 
   return docletParams;
