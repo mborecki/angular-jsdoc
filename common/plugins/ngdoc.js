@@ -213,7 +213,7 @@ function parseParamTypes(docletParams, tag) {
     var parsed = parseType(type);
 
     return {
-      name: parsed.name,
+      name: parsed.name.replace(/</g,'&lt;'),
       url: parsed.url
     }
   });
