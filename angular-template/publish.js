@@ -222,6 +222,21 @@ exports.publish = function(data, opts, tutorials) {
 
   classes.forEach(function(doclet) {
 
+    if (doclet.augments) {
+      var defaultTypes = ['boolean', 'string', 'expression', '*', 'mixed', 'number', 'null', 'undefined', 'function', 'object', 'array', 'void'];
+      var arrayRegExp = new RegExp(/Array\.(?:<|\&lt;?)(.+)>$/);
+      doclet.augments = doclet.augments.map(function(c) {
+        var array = arrayRegExp.exec(c);
+        var className = array ? array[1] : c;
+
+        if (defaultTypes.indexOf(className) !== -1) {
+          return className;
+        } else {
+          return '<a href="' + className + '.html">' + className + (array ? '[]' : '') + '</a>';
+        }
+      })
+    }
+
     if (doclet.meta && doclet.kind == 'class') {
       sourceCodes[doclet.name] = {
         name: doclet.name,
@@ -297,7 +312,7 @@ exports.publish = function(data, opts, tutorials) {
   });
 
   var defaultTypes = ['boolean', 'string', 'expression', '*', 'mixed', 'number', 'null', 'undefined', 'function', 'object', 'array', 'void'];
-  var arrayRegExp = new RegExp(/Array\.(?:<|\&lt;?)(.+)>$/)
+  var arrayRegExp = new RegExp(/Array\.(?:<|\&lt;?)(.+)>$/);
   var qRegex = new RegExp(/\$q\.?(?:<|\&lt;?)(.+)>/);
   classes.forEach(function(doclet) {
 

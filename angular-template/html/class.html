@@ -4,6 +4,10 @@
     <li class="chip" ht-if="restrict" ht-repeat="rest in restrict">{{rest}}</li>
   </ul>
 
+  <div ht-if="augments">
+    Extends: {{ augments }}
+  </div>
+
   <div class="clearfix"></div>
 
   <div ht-if="description" class="description">
@@ -30,7 +34,7 @@
   </div>
 
   <div ht-if="params">
-    <h4>Parameters</h4>
+    <h4>Dependences</h4>
     <table class="params">
       <thead>
         <tr><th>Name</th><th>Type</th><th class="last">Description</th></tr>
