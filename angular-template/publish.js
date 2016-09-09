@@ -68,6 +68,8 @@ var generate = function(filepath, data) {
   data.basePath = __dirname;
   data.marked = marked;
 
+  data.ngdoc = data.ngdoc || '';
+
   var layoutPath = path.join(templatePath, 'html', 'layout.html');
   var html = angularTemplate(layoutPath, data, {jsMode:false});
   fs.writeFileSync(filepath, html, 'utf8');
@@ -242,7 +244,8 @@ exports.publish = function(data, opts, tutorials) {
         name: doclet.name,
         longname: doclet.longname,
         path: doclet.meta.path,
-        filename: doclet.meta.filename
+        filename: doclet.meta.filename,
+        ngdoc: doclet.ngdoc
       };
     }
 
@@ -289,7 +292,6 @@ exports.publish = function(data, opts, tutorials) {
       return helper.toTutorial(tutorial, null,
         { tag: 'em', classname: 'disabled', prefix: 'Tutorial: ' });
     };
-
 
     if (doclet.meta) {
       if (doclet.kind == 'class') {

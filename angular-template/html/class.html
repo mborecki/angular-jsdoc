@@ -34,7 +34,7 @@
   </div>
 
   <div ht-if="params">
-    <h4>Dependences</h4>
+    <h4>{{ ngdoc === 'directive' ? 'Dependences' : 'Parametrs' }}</h4>
     <table class="params">
       <thead>
         <tr><th>Name</th><th>Type</th><th class="last">Description</th></tr>
