@@ -313,52 +313,71 @@ exports.publish = function(data, opts, tutorials) {
     }
   });
 
-  var defaultTypes = ['boolean', 'string', 'expression', '*', 'mixed', 'number', 'null', 'undefined', 'function', 'object', 'array', 'void'];
+  var defaultTypes = ['boolean', 'string', 'expression', '*', 'mixed', 'number', 'null', 'undefined', 'function', 'object', 'Object', 'array', 'void'];
   var arrayRegExp = new RegExp(/Array\.(?:<|\&lt;?)(.+)>$/);
+  var typeRegex = new RegExp(/(.*?)(\[\])?$/);
   var qRegex = new RegExp(/\$q\.?(?:<|\&lt;?)(.+)>/);
+  var hashRegex = new RegExp(/^Object\.?(?:<|\&lt;?)(.+)(?:\s*)\,(?:\s*)(.+)>$/);
+
+  function parseType(type) {
+
+    function parseNormalType(t) {
+      var array = !!t[2];
+      var name = t[1] + (array ? '[]' : '');
+      var url = '<a href="' + t[1] + '.html">' + name + '</a>';
+
+      if (defaultTypes.indexOf(t[1].toLowerCase()) !== -1) {
+        url = name;
+      }
+
+      return url;
+    }
+
+    function parseQ(q) {
+      var type = parseType(q[1]);
+
+      return '$q&lt;' + type + '>';
+    }
+
+    function parseHash(hash) {
+      var key = parseType(hash[1]);
+      var type = parseType(hash[2]);
+
+      return 'Object&lt;' + key + ', ' + type + '>';
+    }
+
+    var q = qRegex.exec(type);
+
+    if (q) {
+      return parseQ(q)
+    }
+
+    var hash = hashRegex.exec(type);
+
+    if (hash) {
+      return parseHash(hash)
+    }
+
+    var t = typeRegex.exec(type)
+
+    if (t) {
+      return parseNormalType(t)
+    }
+
+    return '';
+  }
+
   classes.forEach(function(doclet) {
 
     if (doclet.children && doclet.children.member) {
-
       doclet.children.member.forEach(function(m){
-
         if (m.type) {
-
           m.type.names = m.type.names.map(function(t) {
-            if (t.indexOf('<a href') !== -1) {
-              return t;
-            }
-            var q = qRegex.exec(t);
-            if (q) {
-              t = q[1];
-            }
-
-            var r = '';
-            var array = arrayRegExp.exec(t);
-
-            var typeName = array ? array[1] : t;
-
-
-            if (defaultTypes.indexOf(typeName) !== -1) {
-              r = typeName;
-            } else {
-              r = '<a href="' + typeName + '.html">' + typeName + (array ? '[]' : '') + '</a>';
-            }
-
-
-            if (q) {
-              r = '$q&lt;' + r + '>';
-            }
-
-            return r;
+            return parseType(t);
           });
-
         }
-
       });
-
     }
-
   });
 
   // build navigation
